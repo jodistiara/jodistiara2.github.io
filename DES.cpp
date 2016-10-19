@@ -2,7 +2,7 @@
 using namespace std;
 int plaintxt[65], ciphertxt[65], key[65], IP[65], PC1[57], PC2[48], 
     Exp[49], Permuted[33], C[29], D[29], sbox[49], SBoxRes[33], 
-	Rprev[33], Rnext[33], Lprev[33], Lnext[33];
+    Rprev[33], Rnext[33], Lprev[33], Lnext[33];
 
 int tableIP[] = {0, 
 58, 50, 42, 34, 26, 18, 10, 2,
@@ -108,8 +108,8 @@ tableInvIP[65]= {0,
 };
 
 
-void show(int a[]) {
-	for (int i = 1; i < 65; i++) if(i%8 == 0) cout << a[i] << endl;
+void show(int a[], int len) {
+	for (int i = 1; i < len; i++) if(i%8 == 0) cout << a[i] << endl;
 								 else cout << a[i] << ' '; 
 }
 
@@ -124,7 +124,7 @@ void decToBin(int a) { // blm slese
 
 void initialPerm() {
 	for (int i = 1; i < 65; i++) IP[i] = plaintxt[tableIP[i]];
-	cout << endl << "IP: \n"; show(IP);
+//	cout << endl << "IP: \n"; show(IP,65);
 }
 
 void prevLR() {
@@ -166,14 +166,14 @@ void leftShift(int a) {
 		D[i] = D[i+1];
 	}
 	C[28] = tempC; D[28] = tempD;
-	cout << endl << "C: \n"; show(C);
-	cout << endl << "D: \n"; show(D);
+//	cout << endl << "C: \n"; show(C,29);
+//	cout << endl << "D: \n"; show(D,29);
 
 }
 
 void permChoice1() {
 	for (int i = 1; i < 57; i++) PC1[i] = key[tablePC1[i]];
-	cout << endl << "PC1: \n"; show(PC1);
+//	cout << endl << "PC1: \n"; show(PC1,57);
 }
 
 void permChoice2() {
@@ -183,12 +183,12 @@ void permChoice2() {
 		keyShifted[i+28] = D[i];
 	}
 	for (int i = 1; i < 49; i++) PC2[i] = keyShifted[tablePC2[i]];
-	cout << endl << "PC2: \n"; show(PC2);
+//	cout << endl << "PC2: \n"; show(PC2,49);
 }
 
 void expansion() {
 	for(int i = 1; i < 49; i++) Exp[i] = Rprev[tableExp[i]];	
-	cout << endl << "Exp: \n"; show(Exp);
+//	cout << endl << "Exp: \n"; show(Exp,49);
 }
 
 void doXOR(int a[], int b[], int c[]) {
@@ -245,47 +245,56 @@ void Perm() {
 	for (int i = 1; i < 33; i++) Permuted[i] = SBoxRes[tablePerm[i]];
 }
 
-void invIP() {
+void generateCipher() {
 	int temp[65];
+//	cout << endl ; show(Lnext,33);
+//	cout << endl ; show(Rnext,33);
 	for (int i = 1; i < 33; i++) {
 		ciphertxt[i] = Lnext[i];
 		ciphertxt[i+32] = Rnext[i];
 	}
-	for (int i = 1; i < 65; i++) ciphertxt[i] = temp[tableInvIP[i]];
+	
 }
 
 int main() {
 	srand(time(NULL));
 	int round = 1;
-	for (int i = 1; i < 65; i++) plaintxt[i] = rand()%2;
-	for (int i = 1; i < 65; i++) key[i] = rand()%2;
+	for (int i = 1; i < 65; i++) plaintxt[i] = rand()%2;	// generate plain text
+	for (int i = 1; i < 65; i++) key[i] = rand()%2;			// generate key
 	
-	cout << "PLAIN TEXT:\n";
-	show(plaintxt);
+	cout << "PLAIN TEXT:" << endl;
+	show(plaintxt,65);
 	
-	initialPerm();
+	cout << endl << "KEY: " << endl;
+	show(key,65);
+	
+//	PLAIN TEXT
+	initialPerm();		
 	prevLR();
+	
+//	KEY
 	permChoice1();
 	prevCD();
 	
 	while(round <= 16) {
-						leftShift(round);
+		
+//		PLAINTEXT	KEY
+				leftShift(round);
 		expansion();	permChoice2();
 		
-					doXOR(Exp, PC2, sbox);
-					SBox();
-					Perm();
-					doXOR(Lprev, Permuted, Rnext);
+			doXOR(Exp, PC2, sbox);
+			SBox();
+			Perm();
+			doXOR(Lprev, Permuted, Rnext);
 		
 		nextLR();
 		round++;
 	}
 	
-	invIP();
-	cout << "CIPHERTEXT:\n";
-	show(ciphertxt);
+	generateCipher();
+	cout << endl << "CIPHERTEXT:" << endl;
+	show(ciphertxt,65);
 
 	
 	return 0;
 }
-
